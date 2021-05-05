@@ -104,3 +104,6 @@ typings/
 
 # config
 config/
+
+#Ignore all csv
+*.csv
