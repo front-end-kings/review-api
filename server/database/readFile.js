@@ -6,7 +6,7 @@ readFile = async (Filepath) => {
   console.time('Execution Time');
   console.log('Reading in file...');
 
-  return new Promise(function(resolve,reject) {
+  return new Promise((resolve,reject) => {
     const output = [];
     fs.createReadStream(Filepath)
     .pipe(csv())

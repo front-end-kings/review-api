@@ -9,6 +9,8 @@ const pgp = require('pg-promise')({
   capSQL: true // capitalize all generated SQL
 });
 
+//Truncated but keep for reference
+
 const pool = new Pool({
   user: 'postgres',
   host: 'localhost',
@@ -22,7 +24,6 @@ const jsonPath = path.join(__dirname, 'reviews_photos.csv');
 const truncate = `TRUNCATE reviews_photos`
 const insertQuery = `INSERT INTO reviews_photos (id, review_id, url) VALUES ($1, $2, $3)`;
 const copy = `COPY reviews_photos FROM ${jsonPath}`;
-
 
 // const db = pgp({
 //   user: 'postgres',
