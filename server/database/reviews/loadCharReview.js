@@ -17,15 +17,16 @@ const client = new Client({
 client.connect(()=> console.log('Connected!'));
 
 //Join csv path file
-const jsonPath = path.join(__dirname, 'reviews_photos.csv');
-const table_name = 'reviews_photos'
+const jsonPath = path.join(__dirname, 'characteristic_reviews.csv');
+const table_name = 'characteristics_review';
 //Create your queries here
 const create_table = `
 DROP TABLE IF EXISTS ${table_name};
 CREATE TABLE IF NOT EXISTS ${table_name} (
   ID SERIAL,
-  REVIEWS_ID INT NOT NULL,
-  URL TEXT
+  CHARACTERISTIC_ID INT NOT NULL,
+  REVIEW_ID INT NOT NULL,
+  VALUE INT NOT NULL
 );`;
 
 //Table creation & deletion

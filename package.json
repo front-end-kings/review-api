@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server",
-    "loadReviewPhoto": "nodemon server/database/reviews/loadReviewPhoto.js"
+    "loadReviewPhoto": "nodemon server/database/reviews/loadReviewPhoto.js",
+    "loadChar": "nodemon server/database/reviews/loadCharacteristics.js",
+    "loadCharReview": "nodemon server/database/reviews/loadCharReview.js",
+    "loadReview": "nodemon server/database/reviews/loadReview.js"
   },
   "repository": {
     "type": "git",
