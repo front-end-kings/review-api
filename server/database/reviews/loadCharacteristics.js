@@ -14,7 +14,9 @@ const client = new Client({
   port: 5432,
 });
 
-client.connect(()=> console.log('Connected!'));
+client.connect()
+.then(()=> console.log('Connected!'))
+.catch(err => console.log(err));
 
 //Join csv path file
 const jsonPath = path.join(__dirname, 'characteristics.csv');
