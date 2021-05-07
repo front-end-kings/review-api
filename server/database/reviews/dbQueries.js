@@ -33,21 +33,24 @@ const getReviews = (req, res) => {
   switch(sort) {
     case 'newest':
       query = `
-        select rev.review_id, rev.rating, rev.date, rev.summary,\
-        rev.body, rev.recommend, rev.reported, rev.reviewer_name,\
-        rev.reviewer_email,\
-        CASE\
-          WHEN rev.response = 'null' then ''\
-          ELSE rev.response\
-        END response,\
-        rev.helpfulness,\
-        photos.photos\
-        FROM reviews as rev\
-        left join (\
-          SELECT reviews_id, array_remove(array_agg(url::TEXT), NULL) as photos\
-          from reviews_photos GROUP BY reviews_id ) as photos\
-        on rev.review_id = photos.reviews_id\
-        where rev.product_id = ${product_id}\
+        select rev.review_id, rev.rating, rev.date, rev.summary,
+        rev.body, rev.recommend, rev.reported, rev.reviewer_name,
+        rev.reviewer_email,
+        CASE
+          WHEN rev.response = 'null' then ''
+          ELSE rev.response
+        END response,
+        rev.helpfulness,
+        CASE
+	        WHEN photos.photos IS NULL then ARRAY[]::text[]
+	        ELSE photos.photos
+        END
+        FROM reviews as rev
+        left join (
+          SELECT reviews_id, array_remove(array_agg(url::TEXT), NULL) as photos
+          from reviews_photos GROUP BY reviews_id ) as photos
+        on rev.review_id = photos.reviews_id
+        where rev.product_id = ${product_id} and rev.reported = false
         ORDER BY rev.date DESC
         LIMIT ${limit}
         OFFSET ${offset};
@@ -55,21 +58,24 @@ const getReviews = (req, res) => {
       break;
     case 'helpful':
       query = `
-        select rev.review_id, rev.rating, rev.date, rev.summary,\
-        rev.body, rev.recommend, rev.reported, rev.reviewer_name,\
-        rev.reviewer_email,\
-        CASE\
-          WHEN rev.response = 'null' then ''\
-          ELSE rev.response\
-        END response,\
-        rev.helpfulness,\
-        photos.photos\
-        FROM reviews as rev\
-        left join (\
-          SELECT reviews_id, array_remove(array_agg(url::TEXT), NULL) as photos\
-          from reviews_photos GROUP BY reviews_id ) as photos\
-        on rev.review_id = photos.reviews_id\
-        where rev.product_id = ${product_id}\
+        select rev.review_id, rev.rating, rev.date, rev.summary,
+        rev.body, rev.recommend, rev.reported, rev.reviewer_name,
+        rev.reviewer_email,
+        CASE
+          WHEN rev.response = 'null' then ''
+          ELSE rev.response
+        END response,
+        rev.helpfulness,
+        CASE
+	        WHEN photos.photos IS NULL then ARRAY[]::text[]
+	        ELSE photos.photos
+        END
+        FROM reviews as rev
+        left join (
+          SELECT reviews_id, array_remove(array_agg(url::TEXT), NULL) as photos
+          from reviews_photos GROUP BY reviews_id ) as photos
+        on rev.review_id = photos.reviews_id
+        where rev.product_id = ${product_id} and rev.reported = false
         ORDER BY rev.helpfulness DESC
         LIMIT ${limit}
         OFFSET ${offset};
@@ -77,21 +83,24 @@ const getReviews = (req, res) => {
       break;
     default:
       query = `
-        select rev.review_id, rev.rating, rev.date, rev.summary,\
-        rev.body, rev.recommend, rev.reported, rev.reviewer_name,\
-        rev.reviewer_email,\
-        CASE\
-          WHEN rev.response = 'null' then ''\
-          ELSE rev.response\
-        END response,\
-        rev.helpfulness,\
-        photos.photos\
-        FROM reviews as rev\
-        left join (\
-          SELECT reviews_id, array_remove(array_agg(url::TEXT), NULL) as photos\
-          from reviews_photos GROUP BY reviews_id ) as photos\
-        on rev.review_id = photos.reviews_id\
-        where rev.product_id = ${product_id}
+        select rev.review_id, rev.rating, rev.date, rev.summary,
+        rev.body, rev.recommend, rev.reported, rev.reviewer_name,
+        rev.reviewer_email,
+        CASE
+          WHEN rev.response = 'null' then ''
+          ELSE rev.response
+        END response,
+        rev.helpfulness,
+        CASE
+	        WHEN photos.photos IS NULL then ARRAY[]::text[]
+	        ELSE photos.photos
+        END
+        FROM reviews as rev
+        left join (
+          SELECT reviews_id, array_remove(array_agg(url::TEXT), NULL) as photos
+          from reviews_photos GROUP BY reviews_id ) as photos
+        on rev.review_id = photos.reviews_id
+        where rev.product_id = ${product_id} and rev.reported = false
         LIMIT ${limit}
         OFFSET ${offset};
       `;
@@ -104,6 +113,7 @@ const getReviews = (req, res) => {
       console.log(err);
     }
     res.status(200).json({page: page, product: product_id, count: limit, results: results.rows});
+    pool.end();
   }))
   //.then(() => pool.query(dropRevIndex))
   //.then(() => pool.query(dropPhotoIndex))
@@ -113,26 +123,26 @@ const getReviews = (req, res) => {
 const getMeta = async (req, res) => {
   const product_id = parseInt(req.query.product_id);
   const ratings = `
-    select\
-    count (rating) filter (where rating = 1) as "1",\
-    count (rating) filter (where rating = 2) as "2",\
-    count (rating) filter (where rating = 3) as "3",\
-    count (rating) filter (where rating = 4) as "4",\
-    count (rating) filter (where rating = 5) as "5"\
+    select
+    count (rating) filter (where rating = 1) as "1",
+    count (rating) filter (where rating = 2) as "2",
+    count (rating) filter (where rating = 3) as "3",
+    count (rating) filter (where rating = 4) as "4",
+    count (rating) filter (where rating = 5) as "5"
     from reviews
     where product_id = ${product_id}
     ;
   `;
   const recommend = `
-    select\
+    select
     count (recommend) filter (where recommend = false) as "0",
     count (recommend) filter (where recommend = true) as "1"
     from reviews
     where product_id = ${product_id}
     ;
   `;
-  const char_query = `
-    select json_build_object(char.name, row_to_json(char_review)) as "characteristics"
+  const charQuery = `
+    select char.name, row_to_json(char_review) as "characteristics"
     from characteristics as char
     left join (
       SELECT characteristic_id as id, AVG(VALUE) as VALUE from characteristics_review
@@ -142,12 +152,15 @@ const getMeta = async (req, res) => {
     where char.product_id = ${product_id}
     ORDER BY char_review.id
     ;
-  `
+  `;
   const ratingObj = await pool.query(ratings);
   const recommendObj = await pool.query(recommend);
-  const charObj = await pool.query(char_query);
-  // console.log('Char output', charObj.rows);
-  res.status(200).json({rating: ratingObj.rows[0], recommend: recommendObj.rows[0], characteristics: charObj.rows[0].characteristics});
+  const charObj = await pool.query(charQuery);
+  let traitObj= {};
+  charObj.rows.map(trait => {
+    traitObj[trait.name] = trait.characteristics;
+  });
+  res.status(200).json({rating: ratingObj.rows[0], recommend: recommendObj.rows[0], characteristics: traitObj});
 }
 
 const addReview = (req, res) => {
