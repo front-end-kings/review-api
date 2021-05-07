@@ -23,7 +23,7 @@ const table_name = 'reviews';
 const create_table = `
 DROP TABLE IF EXISTS ${table_name};
 CREATE TABLE IF NOT EXISTS ${table_name} (
-  ID SERIAL,
+  REVIEW_ID SERIAL,
   PRODUCT_ID INT NOT NULL,
   RATING INT NOT NULL,
   DATE DATE NOT NULL,
