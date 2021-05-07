@@ -110,15 +110,44 @@ const getReviews = (req, res) => {
   .catch(e => console.error(e));
 }
 
-const getMeta = (req, res) => {
+const getMeta = async (req, res) => {
   const product_id = parseInt(req.query.product_id);
-  const query = `SELECT * FROM reviews LIMIT 5;`
-  pool.query(query, (err, results) => {
-    if (err) {
-      console.log(err);
-    }
-    res.status(200).json(results.rows)
-  })
+  const ratings = `
+    select\
+    count (rating) filter (where rating = 1) as "1",\
+    count (rating) filter (where rating = 2) as "2",\
+    count (rating) filter (where rating = 3) as "3",\
+    count (rating) filter (where rating = 4) as "4",\
+    count (rating) filter (where rating = 5) as "5"\
+    from reviews
+    where product_id = ${product_id}
+    ;
+  `;
+  const recommend = `
+    select\
+    count (recommend) filter (where recommend = false) as "0",
+    count (recommend) filter (where recommend = true) as "1"
+    from reviews
+    where product_id = ${product_id}
+    ;
+  `;
+  const char_query = `
+    select json_build_object(char.name, row_to_json(char_review)) as "characteristics"
+    from characteristics as char
+    left join (
+      SELECT characteristic_id as id, AVG(VALUE) as VALUE from characteristics_review
+      GROUP BY characteristics_review.characteristic_id
+    ) as char_review
+    on char.id = char_review.id
+    where char.product_id = ${product_id}
+    ORDER BY char_review.id
+    ;
+  `
+  const ratingObj = await pool.query(ratings);
+  const recommendObj = await pool.query(recommend);
+  const charObj = await pool.query(char_query);
+  // console.log('Char output', charObj.rows);
+  res.status(200).json({rating: ratingObj.rows[0], recommend: recommendObj.rows[0], characteristics: charObj.rows[0].characteristics});
 }
 
 const addReview = (req, res) => {

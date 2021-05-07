@@ -15,3 +15,4 @@ app.listen(PORT, () => {
 });
 
 app.get('/reviews/', db.getReviews);
+app.get('/reviews/meta', db.getMeta);
