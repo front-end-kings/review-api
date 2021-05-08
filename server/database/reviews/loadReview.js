@@ -94,12 +94,14 @@ stream.on('error', (error) => {
 const alterTable = `
 ALTER TABLE ${table_name}
 DROP COLUMN ID,
-ADD COLUMN REVIEW_ID BIGSERIAL PRIMARY KEY;
+ADD COLUMN REVIEW_ID SERIAL PRIMARY KEY;
+DROP INDEX IF EXISTS rev_idx;
+CREATE INDEX IF NOT EXISTS rev_idx ON ${table_name} (review_id, date);
 `;
 
 stream.on('finish', () => {
     console.log(`Completed loading data into ${table_name} `)
-    console.log('Starting alter table');
+    console.log('Starting alter table and creating index...');
     console.time('Alter execution time');
     client.query(alterTable).then(() => {
       console.log('Altered successfully!');

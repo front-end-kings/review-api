@@ -18,10 +18,6 @@ const getReviews = (req, res) => {
   const page = req.query.page || 1;
   const offset = limit * page - limit;
   const sort = req.query.sort || 'relevant';
-  const createRevIndex = 'CREATE INDEX IF NOT EXISTS review_idx ON reviews (review_id);';
-  const createPhotoIndex = 'CREATE INDEX IF NOT EXISTS photo_idx ON reviews_photos (id, reviews_id);'
-  const dropRevIndex = 'DROP INDEX review_idx;';
-  const dropPhotoIndex = 'DROP INDEX photo_idx';
   let query ='';
   switch(sort) {
     case 'newest':
@@ -41,7 +37,7 @@ const getReviews = (req, res) => {
         FROM reviews as rev
         LEFT JOIN (
           SELECT reviews_id, array_remove(array_agg(url::TEXT), NULL) as photos
-          FROM reviews_photos GROUPY BY reviews_id ) as photos
+          FROM reviews_photos GROUP BY reviews_id ) as photos
         on rev.review_id = photos.reviews_id
         where rev.product_id = ${product_id} and rev.reported = false
         ORDER BY rev.date DESC
@@ -66,13 +62,14 @@ const getReviews = (req, res) => {
         FROM reviews as rev
         LEFT JOIN (
           SELECT reviews_id, array_remove(array_agg(url::TEXT), NULL) as photos
-          from reviews_photos GROUPY BY reviews_id ) as photos
+          from reviews_photos GROUP BY reviews_id ) as photos
         on rev.review_id = photos.reviews_id
         where rev.product_id = ${product_id} and rev.reported = false
-        ORDER BY rev.helpfulness DESC
+        -- ORDER BY rev.helpfulness DESC
         LIMIT ${limit}
         OFFSET ${offset};
       `;
+      // query = `select * from reviews where product_id = ${product_id} limit 5`;
       break;
     default:
       query = `
@@ -91,26 +88,20 @@ const getReviews = (req, res) => {
         FROM reviews as rev
         LEFT JOIN (
           SELECT reviews_id, array_remove(array_agg(url::TEXT), NULL) as photos
-          from reviews_photos GROUPY BY reviews_id ) as photos
+          from reviews_photos GROUP BY reviews_id ) as photos
         on rev.review_id = photos.reviews_id
         where rev.product_id = ${product_id} and rev.reported = false
         LIMIT ${limit}
         OFFSET ${offset};
       `;
   }
-  pool.query(createRevIndex)
-  .then(() => pool.query(createPhotoIndex))
-  .then(() =>
-    pool.query(query, (err, results) => {
-    if (err) {
-      console.log(err);
-    }
-    res.status(200).json({page: page, product: product_id, count: limit, results: results.rows});
-    pool.end();
-  }))
-  //.then(() => pool.query(dropRevIndex))
-  //.then(() => pool.query(dropPhotoIndex))
-  .catch(e => console.error(e));
+  pool.query(query, (err, results) => {
+  if (err) {
+    console.log(err);
+  }
+  res.status(200).json({page: page, product: product_id, count: limit, results: results.rows});
+  // pool.end();
+  });
 };
 
 const getMeta = async (req, res) => {
@@ -137,9 +128,9 @@ const getMeta = async (req, res) => {
   const charQuery = `
     SELECT char.name, row_to_json(char_review) as "characteristics"
     from characteristics as char
-    LEFT JOIN (
+    INNER JOIN (
       SELECT characteristic_id as id, AVG(VALUE) as VALUE from characteristics_review
-      GROUPY BY characteristics_review.characteristic_id
+      GROUP BY characteristics_review.characteristic_id
     ) as char_review
     on char.id = char_review.id
     where char.product_id = ${product_id}
@@ -158,6 +149,8 @@ const getMeta = async (req, res) => {
 
 const addReview = async (req, res) => {
   // Write reviewQuery first in order to get a new review id
+
+  // Make sure to handle single quotes in strings
   const reviewQuery = `
     INSERT INTO reviews (product_id, rating, date, summary,
       body, recommend, reported, reviewer_name,
@@ -166,8 +159,8 @@ const addReview = async (req, res) => {
       ${req.body.product_id},
       ${req.body.rating},
       current_timestamp,
-      '${req.body.summary}',
-      '${req.body.body}',
+      '${req.body.summary.split("'").join("''")}',
+      '${req.body.body.split("'").join("''")}',
       ${req.body.recommend},
       false,
       '${req.body.reviewer_name}',
@@ -207,9 +200,9 @@ const addReview = async (req, res) => {
   const lastTrait = Object.keys(req.body.characteristics).reverse();
   for ( const [key, value] of Object.entries(req.body.characteristics)) {
     if (key === lastTrait[0]) {
-      charInserts += `(${key}, ${reviewID}, ${value})`
+      charInserts += `(${key}, ${reviewID}, ${value});`;
     } else {
-      charInserts += `(${key}, ${reviewID}, ${value}),`
+      charInserts += `(${key}, ${reviewID}, ${value}),`;
     }
   }
   const charQuery = `INSERT INTO characteristics_review (characteristic_id, review_id, value) VALUES\n` + charInserts;

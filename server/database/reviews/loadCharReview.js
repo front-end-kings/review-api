@@ -54,11 +54,13 @@ const alterTable = `
 ALTER TABLE ${table_name}
 DROP COLUMN ID,
 ADD COLUMN ID SERIAL PRIMARY KEY;
+DROP INDEX IF EXISTS charRev_idx;
+CREATE INDEX IF NOT EXISTS charRev_idx ON ${table_name} (id, characteristic_id);
 `;
 
 stream.on('finish', () => {
   console.log(`Completed loading data into ${table_name} `)
-  console.log('Starting alter table');
+  console.log('Starting alter table and creating index...');
   console.time('Alter execution time');
   client.query(alterTable).then(() => {
     console.log('Altered successfully!');
