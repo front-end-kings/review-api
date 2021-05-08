@@ -177,7 +177,7 @@ const addReview = async (req, res) => {
       )
   `;
 
-  // Query to get review ID once new review has been submitted
+  // Query to get review ID once new review has been submitted. To do - research currval
   const getReviewID = `
   SELECT review_id FROM reviews
   WHERE product_id = ${req.body.product_id}
@@ -215,6 +215,7 @@ const addReview = async (req, res) => {
   const charQuery = `INSERT INTO characteristics_review (characteristic_id, review_id, value) VALUES\n` + charInserts;
   await pool.query(charQuery);
 
+  // console.log(pool.query('select currval(pg_get_serial_sequence(public.reviews));'));
   // Ending process
   res.status(204);
   res.end();
