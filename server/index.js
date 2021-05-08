@@ -16,3 +16,7 @@ app.listen(PORT, () => {
 
 app.get('/reviews/', db.getReviews);
 app.get('/reviews/meta', db.getMeta);
+app.post('/reviews', db.addReview);
+app.put('/reviews/:review_id/helpful', db.upHelpful);
+app.put('/reviews/:review_id/report', db.report);
+app.put('/reviews/:review_id/unreport', db.unReport);

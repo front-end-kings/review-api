@@ -44,14 +44,28 @@ console.time('Execution Time'); // Time it
 /* Trouble shooting where in file reading went wrong*/
 fileStream.on('error', (error) =>{
   console.log(`Error in reading file: ${error}`)
-})
+});
 stream.on('error', (error) => {
   console.log(`Error in copy command: ${error}`)
-})
+});
+
+const alterTable = `
+ALTER TABLE ${table_name}
+DROP COLUMN ID,
+ADD COLUMN ID SERIAL PRIMARY KEY;
+`;
+
 stream.on('finish', () => {
-    console.log(`Completed loading data into ${table_name} `)
+  console.log(`Completed loading data into ${table_name} `)
+  console.log('Starting alter table');
+  console.time('Alter execution time');
+  client.query(alterTable).then(() => {
+    console.log('Altered successfully!');
+    console.timeEnd('Alter execution time');
     client.end();
-})
+  })
+  .catch(e => console.error(e));
+});
 /* ************************************ */
 
 fileStream.on('open', () => fileStream.pipe(stream));
