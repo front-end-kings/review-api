@@ -54,7 +54,9 @@ ALTER TABLE ${table_name}
 DROP COLUMN ID,
 ADD COLUMN ID SERIAL PRIMARY KEY;
 DROP INDEX IF EXISTS char_idx;
-CREATE INDEX IF NOT EXISTS char_idx ON ${table_name} (id, name);
+CREATE INDEX IF NOT EXISTS char_idx ON ${table_name} (id);
+DROP INDEX IF EXISTS char_prod_idx;
+CREATE INDEX IF NOT EXISTS char_prod_idx ON ${table_name} (product_id);
 `;
 
 stream.on('finish', () => {

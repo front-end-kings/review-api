@@ -54,7 +54,7 @@ ALTER TABLE ${table_name}
 DROP COLUMN ID,
 ADD COLUMN ID SERIAL PRIMARY KEY;
 DROP INDEX IF EXISTS photo_idx;
-CREATE INDEX IF NOT EXISTS photo_idx ON ${table_name} (id, reviews_id);
+CREATE INDEX IF NOT EXISTS photo_idx ON ${table_name} (reviews_id, url);
 `;
 
 stream.on('finish', () => {

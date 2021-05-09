@@ -39,25 +39,6 @@ CREATE TABLE IF NOT EXISTS ${table_name} (
   HELPFULNESS INT
 );
 `;
-// const create_table = `
-// DROP TABLE IF EXISTS ${table_name};
-// CREATE TABLE IF NOT EXISTS ${table_name} (
-//   REVIEW_ID BIGSERIAL PRIMARY KEY,
-//   PRODUCT_ID INT NOT NULL,
-//   RATING INT NOT NULL,
-//   DATE DATE NOT NULL,
-//   SUMMARY TEXT,
-//   BODY TEXT NOT NULL,
-//   RECOMMEND BOOLEAN,
-//   REPORTED BOOLEAN,
-//   REVIEWER_NAME TEXT NOT NULL,
-//   REVIEWER_EMAIL TEXT NOT NULL,
-//   RESPONSE TEXT,
-//   HELPFULNESS INT
-// );
-// /*
-// COPY public.${table_name}(PRODUCT_ID, RATING, DATE, SUMMARY, BODY, RECOMMEND, REPORTED, REVIEWER_NAME, REVIEWER_EMAIL, RESPONSE, HELPFULNESS) FROM '${jsonPath}' DELIMITER ',' CSV HEADER; */
-// `;
 
 //Table creation & deletion
 client.query(create_table).then(res => console.log('Table successfully created!'));
@@ -96,7 +77,7 @@ ALTER TABLE ${table_name}
 DROP COLUMN ID,
 ADD COLUMN REVIEW_ID SERIAL PRIMARY KEY;
 DROP INDEX IF EXISTS rev_idx;
-CREATE INDEX IF NOT EXISTS rev_idx ON ${table_name} (review_id, date);
+CREATE INDEX IF NOT EXISTS rev_idx ON ${table_name} (review_id, product_id, helpfulness, date, response, reported);
 `;
 
 stream.on('finish', () => {
@@ -117,4 +98,3 @@ fileStream.on('end', () => {
   console.log('Stream ended');
   console.timeEnd('Execution Time');
 });
-

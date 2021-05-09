@@ -55,7 +55,7 @@ ALTER TABLE ${table_name}
 DROP COLUMN ID,
 ADD COLUMN ID SERIAL PRIMARY KEY;
 DROP INDEX IF EXISTS charRev_idx;
-CREATE INDEX IF NOT EXISTS charRev_idx ON ${table_name} (id, characteristic_id);
+CREATE INDEX IF NOT EXISTS charRev_idx ON ${table_name} (characteristic_id, value);
 `;
 
 stream.on('finish', () => {
