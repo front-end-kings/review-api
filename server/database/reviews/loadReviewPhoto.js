@@ -6,11 +6,18 @@ const path = require('path');
 
 const csv = require('csv-parser');
 
+// const client = new Client({
+//   user: 'postgres',
+//   host: 'localhost',
+//   database: 'Reviews',
+//   password: config.TOKEN,
+//   port: 5432,
+// });
 const client = new Client({
-  user: 'postgres',
-  host: 'localhost',
+  user: config.AWSUSER,
+  host: config.AWS,
   database: 'Reviews',
-  password: config.TOKEN,
+  password: config.AWSPW,
   port: 5432,
 });
 

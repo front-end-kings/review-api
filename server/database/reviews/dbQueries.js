@@ -69,7 +69,6 @@ const getReviews = (req, res) => {
         LIMIT ${limit}
         OFFSET ${offset};
       `;
-      // query = `select * from reviews where product_id = ${product_id} limit 5`;
       break;
     default:
       query = `
@@ -208,7 +207,6 @@ const addReview = async (req, res) => {
   const charQuery = `INSERT INTO characteristics_review (characteristic_id, review_id, value) VALUES\n` + charInserts;
   await pool.query(charQuery);
 
-  // console.log(pool.query('select currval(pg_get_serial_sequence(public.reviews));'));
   // Ending process
   res.status(204);
   res.end();
