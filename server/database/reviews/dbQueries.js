@@ -11,6 +11,7 @@ const csv = require('csv-parser');
 //   password: config.TOKEN,
 //   port: 5432,
 // });
+
 // AWS version
 const pool = new Pool({
   user: config.AWSUSER,
