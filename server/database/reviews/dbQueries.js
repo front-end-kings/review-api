@@ -4,11 +4,19 @@ const fs = require('fs');
 const path = require('path');
 const csv = require('csv-parser');
 
+// const pool = new Pool({
+//   user: 'postgres',
+//   host: 'localhost',
+//   database: 'Reviews',
+//   password: config.TOKEN,
+//   port: 5432,
+// });
+// AWS version
 const pool = new Pool({
-  user: 'postgres',
+  user: config.AWSUSER,
   host: 'localhost',
   database: 'Reviews',
-  password: config.TOKEN,
+  password: config.AWSPW,
   port: 5432,
 });
 
