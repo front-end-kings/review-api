@@ -17,7 +17,8 @@ export let options = {
 };
 
 export default function () {
-  const url = `http://localhost:3000`;
+  // const url = `http://localhost:3000`;
+  const url = `http://ec2-54-153-104-254.us-west-1.compute.amazonaws.com`;
   const rnd = Math.floor(Math.random() * 950063);
   const sort = ['helpful', 'newest', 'relevant'];
   const randomOption = sort[Math.floor(Math.random() * sort.length)];

@@ -25,7 +25,7 @@ export let options = {
 
 export default function () {
   const rnd = Math.floor(Math.random() * 950063);
-  const url = 'http://ec2-54-176-81-128.us-west-1.compute.amazonaws.com';
+  const url = 'http://ec2-54-153-104-254.us-west-1.compute.amazonaws.com';
   const sort = ['helpful', 'newest', 'relevant'];
   const randomOption = sort[Math.floor(Math.random() * sort.length)];
   let responses = http.batch([
