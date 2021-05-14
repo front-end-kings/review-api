@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const csv = require('csv-parser');
 
+// Local host version
 // const pool = new Pool({
 //   user: 'postgres',
 //   host: 'localhost',
@@ -12,14 +13,23 @@ const csv = require('csv-parser');
 //   port: 5432,
 // });
 
-// AWS version
+// AWS server version
 const pool = new Pool({
   user: config.AWSUSER,
-  host: 'localhost',
+  host: config.AWS,
   database: 'Reviews',
   password: config.AWSPW,
   port: 5432,
 });
+
+// // AWS postgres version
+// const pool = new Pool({
+//   user: config.AWSUSER,
+//   host: 'localhost',
+//   database: 'Reviews',
+//   password: config.AWSPW,
+//   port: 5432,
+// });
 
 const getReviews = (req, res) => {
   const product_id = parseInt(req.query.product_id);
